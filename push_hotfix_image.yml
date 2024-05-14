@@ -1,0 +1,142 @@
+name: hotfix push image to hrabor 
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [closed]
+    branches:
+      - version-14
+
+
+jobs:
+   update-tag-patch:
+    runs-on: org47_runner
+    outputs:
+      new_tag: ${{ steps.set_tag.outputs.new_tag }}
+      
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '14'
+    - name: Compute new tag
+      id: set_tag
+      run: |
+        # Initial setup for default version
+        default_major=1
+        default_minor=0
+        default_patch=0
+        
+        # Fetch tags from the remote repository
+        git fetch --tags
+        
+        # Check if there are any tags in the repository
+        if git describe --tags `git rev-list --tags --max-count=1` >/dev/null 2>&1; then
+            # Get the latest tag if it exists
+            latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+            IFS='.' read -ra VERSION <<< "${latest_tag//v/}"
+            major="${VERSION[0]}"
+            minor="${VERSION[1]}"
+            patch="${VERSION[2]}"
+        else
+            # Set default version if no tags are found
+            major=$default_major
+            minor=$default_minor
+            patch=$default_patch
+        fi
+        
+        # Function to check if a tag exists
+        tag_exists () {
+            git rev-parse "$1" >/dev/null 2>&1
+        }
+        
+        # Increment the patch version and check for an existing tag
+        while true; do
+            patch=$((patch+1))
+            new_tag="v$major.$minor.$patch"
+            if ! tag_exists $new_tag; then
+                break
+            fi
+        done
+        
+        # Echo and push the new tag
+        echo "New tag: $new_tag"
+        git tag $new_tag
+        git push origin $new_tag
+        echo "::set-output name=new_tag::$new_tag"
+
+
+   create-pull-request:
+    needs: update-tag-patch
+    runs-on: org47_runner
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pr_title: "Automated Pull Request"
+          pr_body: "This is an automated pull request."
+          destination_branch: "develop"
+          source_branch: ${{ github.event.pull_request.head.ref }} #fal7w-patch-14
+
+   call_workflow_down_site_on_merge:
+    needs: create-pull-request
+    uses: fintechsys/remittance_image_builder/.github/workflows/down_site.yml@master
+    with:
+      app-name: ${{ github.repository }} 
+      branch-name: ${{ github.event.pull_request.head.ref }}
+      site_name: ${{ github.event.pull_request.head.ref }}.${{ github.event.pull_request.number }}.fix.fintechsys.net
+      pull-request-number: ${{ github.event.pull_request.number }}
+    secrets: 
+      mariadb_pass: ${{ secrets.MARIADB_PASSWORD }}
+
+      
+   # build_image_from_version-14:
+   #  needs: [call_workflow_down_site_on_merge, update-tag-patch]
+   #  uses: fintechsys/remittance_image_builder/.github/workflows/deploy_image_from_version-14.yml@master
+   #  with:
+   #    app-name: ${{ github.repository }} 
+   #    unit-test-app-name: remittance_customize
+   #    branch-name: ${{ github.event.pull_request.head.ref }} #${{ needs.create_branch.outputs.branch_name }}
+   #    fintech_branch: version-14
+   #    tag: ${{ needs.update-tag-patch.outputs.new_tag }}
+
+   #    # site_name: ${{ inputs.branch_name }}.fix.fintechsys.net
+   #  secrets:
+   #    repo_tocken: ${{ secrets.REPO_TOKEN }}
+   #    org_token: ${{ secrets.ORG_TOKEN }}
+   #    users_email: ${{ secrets.USERS_EMAILS }}
+   #    traefik_pass: ${{ secrets.TRAEFIK_PASS }}
+   #    mariadb_pass: ${{ secrets.MARIADB_PASSWORD }}
+
+
+   call_workflow_push_image_to_harbor:  
+      needs: call_workflow_down_site_on_merge
+      # needs: [build_image_from_version-14, update-tag-patch]
+      uses: fintechsys/remittance_image_builder/.github/workflows/hotfix_push_image_to_harbor.yml@master
+      with:
+        app-name: ${{ github.repository }} 
+        branch-name: ${{ github.event.pull_request.head.ref }} 
+        tag: ${{ needs.update-tag-patch.outputs.new_tag }}
+        
+   call_workflow_down_site:
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == false || github.event_name == 'workflow_dispatch'
+    uses: fintechsys/remittance_image_builder/.github/workflows/down_site.yml@master
+    with:
+      app-name: ${{ github.repository }} 
+      branch-name: ${{ github.event.pull_request.head.ref }}
+      site_name: ${{ github.event.pull_request.head.ref }}.${{ github.event.pull_request.number }}.fix.fintechsys.net
+      pull-request-number: ${{ github.event.pull_request.number }}
+    secrets: 
+      mariadb_pass: ${{ secrets.MARIADB_PASSWORD }}
+ 
+      
+  
