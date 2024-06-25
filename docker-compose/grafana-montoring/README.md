@@ -68,7 +68,11 @@ Add the following configuration to your Docker daemon (`daemon.json`) to use Lok
   }
 }
 ```
-
+## Docker restart
+After add `daemon.json` retart docker 
+```bash
+sudo systemctl restart docker
+```
 
 
 
