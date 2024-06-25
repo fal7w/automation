@@ -19,5 +19,8 @@ Ensure Docker and Docker Compose are installed on your system.
 
 This setup uses an external Docker network named `loki-net`. Create this network before starting the services:
 
-```bash
-docker network create loki-net
+ ```bash
+ docker network create loki-net
+
+
+## Prerequisites
