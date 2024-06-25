@@ -21,6 +21,60 @@ This setup uses an external Docker network named `loki-net`. Create this network
 
  ```bash
  docker network create loki-net
-
+```
 
 ## Prerequisites
+- `prometheus.yml`: Configuration for Prometheus.
+- `loki-config.yaml`: Configuration for Loki.
+- `promtail-config.yaml`: Configuration for Promtail.
+- `daemon.json`: Docker daemon configuration to use Loki as the logging driver.
+
+## Usage
+1. Start the services:
+```bash
+docker-compose up -d
+```
+
+## Access the services
+- Prometheus: `http://localhost:9090`
+- cAdvisor: `http://localhost:8181`
+- Grafana: `http://localhost:3550`
+
+## Configuration Details
+# Prometheus
+Prometheus scrapes metrics from the following targets:
+- Prometheus itself
+- cAdvisor
+- Node Exporter
+
+# Loki
+Loki is configured to store logs of the docker container.
+
+# Promtail
+Promtail reads logs from docker container.
+
+# Grafana
+Grafana is pre-configured with an (`admin`) password (`admin`). Access it at `http://localhost:3550` and use the credentials `admin/admin` to log in.
+
+## Docker Daemon Configuration
+Add the following configuration to your Docker daemon (`daemon.json`) to use Loki as the logging driver:
+
+```json
+{
+  "log-driver": "loki",
+  "log-opts": {
+    "loki-url": "http://localhost:3110/loki/api/v1/push",
+    "loki-batch-size": "400"
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
