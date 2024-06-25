@@ -41,19 +41,19 @@ docker-compose up -d
 - Grafana: `http://localhost:3550`
 
 ## Configuration Details
-# Prometheus
+### Prometheus
 Prometheus scrapes metrics from the following targets:
 - Prometheus itself
 - cAdvisor
 - Node Exporter
 
-# Loki
+### Loki
 Loki is configured to store logs of the docker container.
 
-# Promtail
+### Promtail
 Promtail reads logs from docker container.
 
-# Grafana
+### Grafana
 Grafana is pre-configured with an (`admin`) password (`admin`). Access it at `http://localhost:3550` and use the credentials `admin/admin` to log in.
 
 ## Docker Daemon Configuration
