@@ -1,4 +1,4 @@
-# Monitoring and Logging Stack
+# Monitoring and Logging 
 
 This repository contains a Docker Compose setup for a monitoring and logging stack using Prometheus, cAdvisor, Loki, Promtail, Node Exporter, and Grafana.
 
