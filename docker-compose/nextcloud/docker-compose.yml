@@ -1,0 +1,76 @@
+version: '3.7'
+
+services:
+  # Database Service
+  db:
+    image: mariadb:10.5
+    container_name: nextcloud-db
+    restart: always
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password 
+      MYSQL_DATABASE: nextcloud
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: nextcloud_password
+    networks:
+      - nextcloud_network
+
+  # Redis Service
+  redis:
+    image: redis:alpine
+    container_name: nextcloud-redis
+    restart: always
+    volumes:
+      - redis_data:/data
+    networks:
+      - nextcloud_network
+
+  # Nextcloud Service
+  app:
+    image: nextcloud:latest
+    container_name: nextcloud-app
+    restart: always
+    volumes:
+      - nextcloud_config:/var/www/html/config
+      - nextcloud_custom_apps:/var/www/html/custom_apps
+      - /path/to/your/data:/var/www/html/data # Host path to store Nextcloud files # TODO
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=nextcloud_password
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - nextcloud_network
+    ports:
+      - "8080:80" # Expose port 8080 for accessing Nextcloud
+
+  # Reverse Proxy Service (Optional)
+#  proxy:
+#    image: nginx:latest
+#    container_name: nextcloud-proxy
+#    restart: always
+#    ports:
+#      - "80:80"
+#      - "443:443"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#      - ./certs:/etc/nginx/certs:ro
+#    networks:
+#      - nextcloud_network
+#    depends_on:
+#      - app
+
+networks:
+  nextcloud_network:
+    driver: bridge
+
+volumes:
+  db_data:
+  redis_data:
+  nextcloud_config:
+  nextcloud_custom_apps:
