@@ -57,7 +57,7 @@ Promtail reads logs from docker container.
 Grafana is pre-configured with an (`admin`) password (`admin`). Access it at `http://localhost:3550` and use the credentials `admin/admin` to log in.
 
 ## Docker Daemon Configuration
-Add the following configuration to your Docker daemon (`daemon.json`) to use Loki as the logging driver:
+Add the following configuration to your Docker daemon (`/etc/docker/daemon.json`) to use Loki as the logging driver:
 
 ```json
 {
