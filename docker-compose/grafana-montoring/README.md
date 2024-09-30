@@ -74,7 +74,7 @@ Add the following configuration to your Docker daemon (`/etc/docker/daemon.json`
 {
   "log-driver": "loki",
   "log-opts": {
-    "loki-url": "http://localhost:3110/loki/api/v1/push",
+    "loki-url": "http://localhost:3100/loki/api/v1/push",
     "loki-batch-size": "400"
   }
 }
