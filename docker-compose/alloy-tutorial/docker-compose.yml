@@ -1,0 +1,36 @@
+version: '3'
+ services:
+   loki:
+    image: grafana/loki:3.0.0
+    user: root
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config.yaml
+    volumes:
+    - ./config/loki.yml:/etc/loki/config.yaml 
+    - ./data/loki:/data/loki
+
+
+   prometheus:
+     image: prom/prometheus:v2.47.0
+     command:
+       - --web.enable-remote-write-receiver
+       - --config.file=/etc/prometheus/prometheus.yml
+     ports:
+       - "9090:9090"
+
+   promtail:
+      image: grafana/promtail:2.9.0
+      volumes:
+        - /var/lib/docker/containers:/var/lib/docker/containers:ro,rslave
+        - ./config/promtail.yml:/etc/promtail/promtail.yml
+      command:
+        - -config.file=/etc/promtail/promtail.yml
+
+
+   grafana:
+      image: grafana/grafana:11.0.0
+      ports:
+        - "3000:3000"
+      environment:
+        - GF_SECURITY_ADMIN_PASSWORD=admin
