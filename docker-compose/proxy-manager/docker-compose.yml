@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  # vaultwarden:
+  #   image: vaultwarden/server:latest
+  #   container_name: vaultwarden
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./vw-data:/data
+  #   environment:
+  #     WEBSOCKET_ENABLED: "true" # Enable WebSocket notifications
+  #     SIGNUPS_ALLOWED: "false"   # Set to "true" to allow signups
+  #   ports:
+  #     - 8080:80
+  #   networks:
+  #     - vaultwarden-net
+
+  nginxproxymanager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginxproxymanager
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 81:81
+      - 443:443
+    volumes:
+      - ./nginx/data:/data
+      - ./nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - vaultwarden-net
+
+networks:
+  vaultwarden-net:
+    driver: bridge
