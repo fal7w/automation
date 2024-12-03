@@ -1,0 +1,33 @@
+server:
+  http_listen_port: 9080           # HTTP port for Promtail server (optional)
+  grpc_listen_port: 9096           # gRPC port for Promtail server (optional)
+
+positions:
+  filename: /tmp/positions.yaml   # Path where Promtail stores the position of logs it has read.
+
+clients:
+  - url: http://192.168.88.97:3110/loki/api/v1/push   # Updated URL of your Loki server
+
+scrape_configs:
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs              # Label for logs collected from /var/log
+          __path__: /var/log/*log    # Path to log files to scrape (you can modify this based on your needs)
+
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock  # Scrape logs from Docker containers using Docker socket
+        labels:
+          job: docker
+        relabel_configs:
+          - source_labels: [__meta_docker_container_name]
+            target_label: container_name
+
+  - job_name: journal
+    journal_sd_configs:
+      - path: /var/log/journal  # Scrape logs from systemd journal
+        labels:
+          job: journal
