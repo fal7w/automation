@@ -40,7 +40,7 @@ services:
   promtail:
     image: grafana/promtail:latest
     volumes:
-      - ./promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - ./promtail-config.yaml:/etc/promtail/promtail.yaml
     networks:
       - loki-net
     depends_on:
