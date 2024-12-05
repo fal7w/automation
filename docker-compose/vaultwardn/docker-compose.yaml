@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    restart: unless-stopped
+    environment:
+      - WEBSOCKET_ENABLED=true  # Enable WebSocket for real-time updates
+      - SIGNUPS_ALLOWED=true    # Optionally, set to false to disable new signups
+      - ADMIN_TOKEN=nw2OJQjgugygy8/xitbDPZQ8xW5QnagvghvhchoGHGFTDBzVE/lGDzXbZz7ol17qoIXJychcfhcf  # Replace with a secure token
+      - SMTP_HOST=mail.fintechsys.net
+      - SMTP_FROM=vaultwarden@fintechsys.net
+      - SMTP_PORT=465 
+      - SMTP_SECURITY=force_tls
+      - SMTP_USERNAME=vaultwarden_manage@fintechsys.net
+      - SMTP_PASSWORD=wlFthoQYeehyyK9XlZau
+      - DOMAIN=https://vaultwarden_manage.fintechsys.net
+    volumes:
+      - ./vw-data:/data  # Persist Vaultwarden data
+    ports:
+      - 9445:80   # HTTP port
+      - 3012:3012  # WebSocket port
+    depends_on:
+      - db
+
+  db:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: vaultwarden
+      POSTGRES_USER: vaultwarden
+      POSTGRES_PASSWORD: your_password_here  # Replace with a secure password
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data  # Persist database
