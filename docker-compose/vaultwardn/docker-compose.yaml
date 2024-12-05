@@ -12,9 +12,9 @@ services:
       - SMTP_FROM=vaultwarden@fintechsys.net
       - SMTP_PORT=465 
       - SMTP_SECURITY=force_tls
-      - SMTP_USERNAME=vaultwarden_manage@fintechsys.net
-      - SMTP_PASSWORD=wlFthoQYeehyyK9XlZau
-      - DOMAIN=https://vaultwarden_manage.fintechsys.net
+      - SMTP_USERNAME=  #<Email>
+      - SMTP_PASSWORD=  #<Password>
+      - DOMAIN=https://vaultwarden_manage.fintechsys.net #Change-it
     volumes:
       - ./vw-data:/data  # Persist Vaultwarden data
     ports:
